@@ -2,6 +2,7 @@ package com.jarvis.ai
 
 import android.app.Application
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.jarvis.ai.core.BatteryInfo
@@ -34,6 +35,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             )
         )
     )
+
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
     private val _micActive = MutableStateFlow(false)
@@ -46,22 +48,50 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     init {
         pendingSpeech = _messages.value.firstOrNull()?.text
 
-        tts = TextToSpeech(app) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                val result = tts?.setLanguage(Locale("hi", "IN"))
-                    ?: TextToSpeech.LANG_NOT_SUPPORTED
+        tts = TextToSpeech(app.applicationContext) { status ->
+            val engine = tts
 
-                if (result < TextToSpeech.LANG_AVAILABLE) {
-                    tts?.setLanguage(Locale.US)
+            if (status != TextToSpeech.SUCCESS || engine == null) {
+                addVoiceMessage("Voice engine start nahi hua. Phone ka Text-to-Speech engine check karo.")
+            } else {
+                val hindiResult = engine.setLanguage(Locale("hi", "IN"))
+
+                val languageResult = if (hindiResult >= TextToSpeech.LANG_AVAILABLE) {
+                    hindiResult
+                } else {
+                    engine.setLanguage(Locale.US)
                 }
 
-                ttsReady = true
+                if (languageResult < TextToSpeech.LANG_AVAILABLE) {
+                    addVoiceMessage("Hindi aur English voice available nahi hai. Phone mein TTS language install karo.")
+                } else {
+                    ttsReady = true
+                    engine.setSpeechRate(1.0f)
 
-                pendingSpeech?.let { message ->
-                    pendingSpeech = null
-                    speakNow(message)
+                    engine.setOnUtteranceProgressListener(
+                        object : UtteranceProgressListener() {
+                            override fun onStart(utteranceId: String?) {}
+
+                            override fun onDone(utteranceId: String?) {}
+
+                            override fun onError(utteranceId: String?) {
+                                addVoiceMessage("Voice playback error. Phone ka media volume aur TTS engine check karo.")
+                            }
+                        }
+                    )
+
+                    pendingSpeech?.let { message ->
+                        pendingSpeech = null
+                        speakNow(message)
+                    }
                 }
             }
+        }
+    }
+
+    private fun addVoiceMessage(message: String) {
+        _messages.update {
+            it + ChatMessage(nextId++, message, fromUser = false)
         }
     }
 
@@ -100,12 +130,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun speakNow(message: String) {
-        tts?.speak(
+        val result = tts?.speak(
             message,
             TextToSpeech.QUEUE_FLUSH,
             null,
             "jarvis_${System.currentTimeMillis()}"
         )
+
+        if (result == TextToSpeech.ERROR) {
+            addVoiceMessage("JARVIS voice play nahi kar pa rahi. TTS engine check karo.")
+        }
     }
 
     fun clearChat() {
