@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Telegram
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -64,7 +63,7 @@ fun HomeScreen(vm: MainViewModel, onOpenChat: () -> Unit) {
         Shortcut(AppLauncher.WHATSAPP, Icons.Filled.Chat),
         Shortcut(AppLauncher.INSTAGRAM, Icons.Filled.PhotoCamera),
         Shortcut(AppLauncher.FACEBOOK, Icons.Filled.Facebook),
-        Shortcut(AppLauncher.TELEGRAM, Icons.Filled.Telegram),
+        Shortcut(AppLauncher.TELEGRAM, Icons.Filled.Send),
         Shortcut(AppLauncher.MESSENGER, Icons.Filled.Send)
     )
 

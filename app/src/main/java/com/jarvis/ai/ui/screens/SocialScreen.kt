@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Telegram
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -54,7 +53,7 @@ fun SocialScreen() {
             onClick = { AppLauncher.open(context, AppLauncher.MESSENGER) }
         )
         FeatureCard(
-            Icons.Filled.Telegram, "Telegram", "Open app", "OPEN",
+            Icons.Filled.Send, "Telegram", "Open app", "OPEN",
             onClick = { AppLauncher.open(context, AppLauncher.TELEGRAM) }
         )
         FeatureCard(
